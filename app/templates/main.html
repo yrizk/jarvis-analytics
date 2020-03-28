@@ -1,0 +1,84 @@
+<!doctype html >
+<html>
+<title> Jarvis Analytics </title>
+<head>
+	<style>
+	.axis {
+	  font: 10px sans-serif;
+	}
+
+	.axis path,
+	.axis line {
+	  fill: none;
+	  stroke: #000;
+	  shape-rendering: crispEdges;
+	}
+
+	</style>
+</head>
+<body>
+    <h1> Welcome, {{ name  }} </h1>
+    <h3> Tasks over the last 30 days </h3>
+    <canvas id="priority"></canvas>
+    <canvas id="project"></canvas>
+    <canvas id="priority-dcdiff"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+    <script>
+        /*
+         * id: the div id for the canvas.
+         * color: an array of colors (1 / bar)
+         */
+        function barGraph(id, labels, data, graphLabel, color) {
+            return new Chart(id, {
+              type: 'bar',
+              data: {
+                labels: labels,
+                datasets: [{
+                  label: graphLabel,
+                  backgroundColor: color,
+                  data: data
+                }]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  yAxes: [{
+                    ticks: {
+                      beginAtZero: true
+                    }
+                  }]
+                }
+              }
+            });
+        }
+
+        function max(a,b) {
+            return a > b ? a : b;
+        }
+
+        function extract(data, fn) {
+            return Object.values(data)
+                .map(p => p.map(fn));
+        }
+
+        function reduce(dataset) {
+            // first, extract all the dcdiff and the sum those
+            return extract(dataset, {t => t.dcdiff})
+                .map(i => i.reduce(function(a, b) {
+                    return max(a,b);
+            }));
+        }
+
+        var projectData = {{ data.project | safe }};
+        var priorityData = {{ data.priority | safe }};
+        barGraph('project', Object.keys(projectData), Object.values(projectData).
+            map(project => project.length), 'By Project', '#ff0000');
+        barGraph('priority', Object.keys(priorityData), Object.
+            values(priorityData).map(project => project.length), 'By Priority', '#0000ff');
+        barGraph('priority-dcdiff', Object.keys(priorityData), 
+            reduce(priorityData), 'Due Date / Completion Difference', Chart.helpers.color('green'));
+      </script>
+
+</body>
+</html>
