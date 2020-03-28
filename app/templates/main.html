@@ -64,7 +64,7 @@
 
         function reduce(dataset) {
             // first, extract all the dcdiff and the sum those
-            return extract(dataset, {t => t.dcdiff})
+            return extract(dataset, t => t.dcdiff)
                 .map(i => i.reduce(function(a, b) {
                     return max(a,b);
             }));
