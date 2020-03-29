@@ -13,22 +13,14 @@ def parse(i):
     d['is_deleted'] = i['is_deleted']
     d['due'] = i['due']
     d['priority'] = i['priority']
-    due_date = ''
-    if i['due'] is None:
-        due_date = str(datetime.now(timezone.utc))
-    d['dcdiff'] = str((parse_date(i['date_completed']) - parse_date(due_date)).total_seconds())
+    if i['due']:
+        d['dcdiff'] = str((parse_date(i['date_completed']) - parse_date(i['due']['date'])).total_seconds())
+    else:
+        d['dcdiff'] = ''
     return d
 
-#TODO: might I need to do something else in the future? Can i throw out items have
-# a difference of < 1 second?
 def parse_date(d):
-    try:
-        return dateutil.parser.parse(d)
-    except ValueError:
-        return datetime.now(timezone.utc)
-
-def is_valid(t):
-    return t['dcdiff'] > 1
+    return dateutil.parser.parse(d).astimezone(timezone.utc)
 
 def difference_from_today(due_date_utc):
     return datetime.now(timezone.utc) - parse_date(due_date_utc)

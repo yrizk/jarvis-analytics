@@ -19,38 +19,61 @@
 <body>
     <h1> Welcome, {{ name  }} </h1>
     <h3> Tasks over the last 30 days </h3>
-    <canvas id="priority"></canvas>
-    <canvas id="project"></canvas>
-    <canvas id="priority-dcdiff"></canvas>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+    <div id="priority"></div>
+    <div id="project"></div>
+    <div id="priority-dcdiff"></div>
+    <div id="quartiles"></div>
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
     <script>
         /*
-         * id: the div id for the canvas.
-         * color: an array of colors (1 / bar)
+         * uses chart.js to show a bar graph
+         * id: the div id for the div.
+         * title: the title of the chart
+         * labels: the x-axis titles
+         * data: the data for each of the labels (a single array of numerical values)
+         * colors: an array of colors (1 / bar)
          */
-        function barGraph(id, labels, data, graphLabel, color) {
-            return new Chart(id, {
-              type: 'bar',
-              data: {
-                labels: labels,
-                datasets: [{
-                  label: graphLabel,
-                  backgroundColor: color,
-                  data: data
-                }]
-              },
-              options: {
-                responsive: true,
-                scales: {
-                  yAxes: [{
-                    ticks: {
-                      beginAtZero: true
-                    }
-                  }]
-                }
+        function barGraph(id, title, labels, data, colors) {
+            var data = [
+              {
+                x: labels,
+                y: data,
+                type: 'bar',
+                color: colors,
               }
-            });
+            ];
+            var layout = {
+                showLegend: true,
+                title : title
+            }
+            Plotly.newPlot(id, data, layout);
+        }
+
+        /**
+         * id: the div id for the element.
+         * title: the title for the chart
+         * labels: array containing the box-plot names
+         * data: [[], [], ..., []] where each of these contains the data to show.
+         * colors: the color to show the each of the box-plot
+         * Note that labels, data, and colors must have the same length as they are indexed
+         * by a common value.
+         */ 
+        function boxAndWhisker(id, title, labels, data, colors) {
+            var totalData = [];
+            for (var i = 0; i < data.length; i++) {
+                totalData.push({
+                    y: data[i],
+                    type: 'box',
+                    marker: {color: colors[i]},
+                    name: labels[i],
+                })
+            }
+
+            var layout = {
+                title: title,
+                showlegend: true
+            };
+            Plotly.newPlot(id, totalData, layout);
         }
 
         function max(a,b) {
@@ -70,14 +93,20 @@
             }));
         }
 
-        var projectData = {{ data.project | safe }};
-        var priorityData = {{ data.priority | safe }};
-        barGraph('project', Object.keys(projectData), Object.values(projectData).
-            map(project => project.length), 'By Project', '#ff0000');
-        barGraph('priority', Object.keys(priorityData), Object.
-            values(priorityData).map(project => project.length), 'By Priority', '#0000ff');
-        barGraph('priority-dcdiff', Object.keys(priorityData), 
-            reduce(priorityData), 'Due Date / Completion Difference', Chart.helpers.color('green'));
+        window.onload = function() {
+            // from p1 to p4
+            PRIORITY_COLORS = ['#ff0000', '#fcba03', '#03a5fc', '#000000']
+            var projectData = {{ data.project | safe }};
+            var priorityData = {{ data.priority | safe }};
+            barGraph('project', 'By Project', Object.keys(projectData), Object.values(projectData).
+                map(project => project.length), '#ff0000');
+            barGraph('priority', 'By Priority', Object.keys(priorityData), Object.
+                values(priorityData).map(project => project.length), '#0000ff');
+            barGraph('priority-dcdiff', 'Due Date / Completion Difference', Object.keys(priorityData), 
+                reduce(priorityData), Chart.helpers.color('green'));
+            boxAndWhisker('quartiles', 'Due Date / Completion Difference Box Plot', Object.keys(priorityData), extract(priorityData, t => t.dcdiff), PRIORITY_COLORS);
+        };
+
       </script>
 
 </body>

@@ -13,8 +13,7 @@ def completed_item_count_since():
             if task.item_completed_since(item, 30):
                 i = api.items.get_by_id(item['id'])
                 t = task.parse(i)
-                if task.is_valid(t):
-                    items.append(t)
+                items.append(t)
         if len(items) > 0:
             completed_items[project['name']] = items
     return completed_items
