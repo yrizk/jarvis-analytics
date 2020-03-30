@@ -2,19 +2,6 @@
 <html>
 <title> Jarvis Analytics </title>
 <head>
-	<style>
-	.axis {
-	  font: 10px sans-serif;
-	}
-
-	.axis path,
-	.axis line {
-	  fill: none;
-	  stroke: #000;
-	  shape-rendering: crispEdges;
-	}
-
-	</style>
 </head>
 <body>
     <h1> Welcome, {{ name  }} </h1>
@@ -66,6 +53,9 @@
                     type: 'box',
                     marker: {color: colors[i]},
                     name: labels[i],
+                    boxpoints: 'all',
+                    jitter: 0.3,
+                    pointpos: -1.8,
                 })
             }
 
@@ -93,20 +83,15 @@
             }));
         }
 
-        window.onload = function() {
-            // from p1 to p4
-            PRIORITY_COLORS = ['#ff0000', '#fcba03', '#03a5fc', '#000000']
-            var projectData = {{ data.project | safe }};
-            var priorityData = {{ data.priority | safe }};
-            barGraph('project', 'By Project', Object.keys(projectData), Object.values(projectData).
-                map(project => project.length), '#ff0000');
-            barGraph('priority', 'By Priority', Object.keys(priorityData), Object.
-                values(priorityData).map(project => project.length), '#0000ff');
-            barGraph('priority-dcdiff', 'Due Date / Completion Difference', Object.keys(priorityData), 
-                reduce(priorityData), Chart.helpers.color('green'));
-            boxAndWhisker('quartiles', 'Due Date / Completion Difference Box Plot', Object.keys(priorityData), extract(priorityData, t => t.dcdiff), PRIORITY_COLORS);
-        };
 
+       PRIORITY_COLORS = ['#ff0000', '#fcba03', '#03a5fc', '#000000']
+       var projectData = {{ data.project | safe }};
+       var priorityData = {{ data.priority | safe }};
+       barGraph('project', 'By Project', Object.keys(projectData), Object.values(projectData).
+           map(project => project.length), '#ff0000');
+       barGraph('priority', 'By Priority', Object.keys(priorityData), Object.values(priorityData).map(project => project.length), '#0000ff');
+       barGraph('priority-dcdiff', 'Due Date / Completion Difference', Object.keys(priorityData), reduce(priorityData), '#00ff00');
+       boxAndWhisker('quartiles', 'Due Date / Completion Difference Box Plot', Object.keys(priorityData), extract(priorityData, t => t.dcdiff), PRIORITY_COLORS);
       </script>
 
 </body>
